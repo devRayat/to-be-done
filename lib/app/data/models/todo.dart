@@ -8,7 +8,7 @@ import 'package:hive/hive.dart';
 part 'todo.g.dart';
 
 @HiveType(typeId: 0)
-class Todo extends GetxController with HiveObjectMixin, EquatableMixin {
+class Todo with HiveObjectMixin, EquatableMixin {
   @HiveField(0)
   final String id;
 
@@ -24,34 +24,63 @@ class Todo extends GetxController with HiveObjectMixin, EquatableMixin {
   @HiveField(4)
   final DateTime? beforeTime;
 
-  @HiveField(6)
+  @HiveField(5)
   final Color color;
 
-  var done = false.obs;
-
-  void onDone(bool? state) {
-    done.value = state ?? false;
+  @HiveField(6)
+  bool get done => _done.value;
+  set done(bool? state) {
+    _done.value = state ?? false;
   }
 
-  void toggleDone() => done.value = !done.value;
+  Future<void> setDone(bool? newState) async {
+    done = newState;
+    await save();
+  }
+
+  final _done = false.obs;
+
+  void toggleDone() async {
+    await setDone(!done);
+  }
 
   Todo({
     required this.id,
     required this.label,
     required this.description,
+    required this.createdAt,
     this.beforeTime,
-    bool done = false,
     this.color = const Color(0xFFFEFEFE),
-  }) : createdAt = DateTime.now();
+    bool done = false,
+  }) {
+    this.done = done;
+  }
 
-  factory Todo.demo(String id) => Todo(
+  factory Todo.initial({
+    required String id,
+    required String label,
+    required String description,
+    DateTime? beforeTime,
+    bool done = false,
+    Color color = const Color(0xFFFEFEFE),
+    DateTime? createdAt,
+  }) =>
+      Todo(
+        id: id,
+        label: label,
+        description: description,
+        color: color,
+        createdAt: createdAt ?? DateTime.now(),
+      );
+
+  factory Todo.demo(String id) => Todo.initial(
         id: id,
         label: 'Todo $id',
         description: 'Todo description $id',
         beforeTime: DateTime.now(),
       );
 
-  factory Todo.fromJson(Map<String, dynamic> json) => Todo(
+  factory Todo.fromJson(Map<String, dynamic> json) => Todo.initial(
         id: json['id'] as String,
         label: json['label'] as String,
         description: json['description'] as String,
@@ -80,13 +109,13 @@ class Todo extends GetxController with HiveObjectMixin, EquatableMixin {
     bool? done,
     Color? color,
   }) =>
-      Todo(
+      Todo.initial(
         id: id ?? this.id,
         label: label ?? this.label,
         description: description ?? this.description,
         beforeTime: beforeTime ?? this.beforeTime,
         color: color ?? this.color,
-        done: done ?? this.done.value,
+        done: done ?? this.done,
       );
 
   @override

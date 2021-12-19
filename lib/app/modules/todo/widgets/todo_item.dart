@@ -12,18 +12,8 @@ class TodoListItem extends GetView<TodosControllerS> {
       child: Card(
         elevation: 2.0,
         child: InkWell(
-          onTap: () {
-            if (controller.isDeleteMode) {
-              controller.toggleSelectionForDeleting(todo.id);
-            } else {
-              Get.toNamed(Routes.updateTodo(todo.id));
-            }
-          },
-          onLongPress: () {
-            if (!controller.isDeleteMode) {
-              controller.openDeleteMode(todo.id);
-            }
-          },
+          onTap: _tapTodoItem,
+          onLongPress: _longPressTodoItem,
           child: Center(
             child: LI(
               title: Obx(
@@ -31,17 +21,17 @@ class TodoListItem extends GetView<TodosControllerS> {
                   todo.label,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    decoration:
-                        todo.done.value ? TextDecoration.lineThrough : null,
+                    decoration: todo.done ? TextDecoration.lineThrough : null,
                   ),
                 ),
               ),
               subtitle: Text(todo.description),
+              details: Text(todo.createdAt.format(short: true)),
               leading: GetBuilder<TodosControllerS>(
                 assignId: true,
                 id: TodosControllerID.DELETE_MODE,
                 builder: (controller) => AnimatedSize(
-                  duration: Duration(milliseconds: 250),
+                  duration: const Duration(milliseconds: 250),
                   child: controller.isDeleteMode
                       ? GetBuilder<TodosControllerS>(
                           assignId: true,
@@ -55,7 +45,8 @@ class TodoListItem extends GetView<TodosControllerS> {
                               onChanged: (state) => controller
                                   .toggleSelectionForDeleting(todo.id, state),
                             );
-                          })
+                          },
+                        )
                       : null,
                 ),
               ),
@@ -63,7 +54,7 @@ class TodoListItem extends GetView<TodosControllerS> {
                 assignId: true,
                 id: TodosControllerID.DELETE_MODE,
                 builder: (controller) => AnimatedSize(
-                  duration: Duration(milliseconds: 250),
+                  duration: const Duration(milliseconds: 250),
                   child: controller.isDeleteMode
                       ? null
                       : IconButton(
@@ -73,7 +64,7 @@ class TodoListItem extends GetView<TodosControllerS> {
                           icon: Obx(
                             () => AnimatedSwitcher(
                               duration: const Duration(milliseconds: 150),
-                              child: !todo.done.value
+                              child: !todo.done
                                   ? const Icon(Icons.done)
                                   : const Icon(Icons.done_all),
                             ),
@@ -86,6 +77,20 @@ class TodoListItem extends GetView<TodosControllerS> {
         ),
       ),
     );
+  }
+
+  void _longPressTodoItem() {
+    if (!controller.isDeleteMode) {
+      controller.openDeleteMode(todo.id);
+    }
+  }
+
+  void _tapTodoItem() async {
+    if (controller.isDeleteMode) {
+      controller.toggleSelectionForDeleting(todo.id);
+    } else {
+      await Get.toNamed(Routes.updateTodo(todo.id));
+    }
   }
 }
 
@@ -176,11 +181,13 @@ class LI extends StatelessWidget {
     this.subtitle,
     this.leading,
     this.trailing,
+    this.details,
   }) : super(key: key);
 
   final Widget? leading;
   final Widget? trailing;
   final Widget? subtitle;
+  final Widget? details;
   final Widget title;
 
   @override
@@ -195,7 +202,8 @@ class LI extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                DefaultTextStyle(
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 150),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.subtitle1!,
@@ -207,6 +215,11 @@ class LI extends StatelessWidget {
                     maxLines: 1,
                     style: Theme.of(context).textTheme.bodyText2!,
                     child: subtitle!,
+                  ),
+                if (details != null)
+                  DefaultTextStyle(
+                    style: Theme.of(context).textTheme.subtitle2!,
+                    child: details!,
                   ),
               ],
             ),

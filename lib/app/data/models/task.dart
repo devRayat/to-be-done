@@ -34,10 +34,10 @@ class Task with HiveObjectMixin, EquatableMixin {
     required this.id,
     required this.label,
     required this.description,
+    required this.createdAt,
     required this.startAt,
     required this.duration,
     this.color = const Color(0xFFFEFEFE),
-    required this.createdAt,
   });
 
   Task.initial({

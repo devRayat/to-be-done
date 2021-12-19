@@ -10,7 +10,7 @@ class AddTodoController extends GetxController {
     required String label,
     required String description,
   }) {
-    todosController.add(Todo(
+    todosController.add(Todo.initial(
       id: nanoid(6),
       label: label,
       description: description,

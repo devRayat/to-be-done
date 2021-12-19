@@ -36,7 +36,6 @@ class Task {
     final DateTime createdAt;
     final int startAt;
     final int duration;
-    final String ringtone;
 }
 ```
 
@@ -49,4 +48,3 @@ class Task {
 * Task
     * tasks
     * add task
-    * task alarm ringtone

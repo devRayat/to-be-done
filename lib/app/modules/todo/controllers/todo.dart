@@ -14,7 +14,6 @@ abstract class TodosControllerID {
   static const TODOS = 'todos';
 }
 
-// TODO: use update with id, aka simple state management; not reactive.
 class TodosControllerS extends GetxController {
   var _todos = <Todo>[];
   var _isDeleteMode = false;
@@ -28,6 +27,8 @@ class TodosControllerS extends GetxController {
 
   late final Worker _todoWorker;
   late final Worker _deleteModeWorker;
+
+  final _todoBox = Get.find<DatabaseService>().todoBox;
 
   @override
   void onInit() {
@@ -136,12 +137,16 @@ class TodosControllerS extends GetxController {
   //   _isDeleteMode.value = state ?? false;
   // }
 
-  void add(Todo newTodo) {
+  Future<void> add(Todo newTodo) async {
+    await _todoBox.put(newTodo.id, newTodo);
+
     _todos.add(newTodo);
     update([TodosControllerID.TODOS]);
   }
 
-  void updateItem(Todo updatedTodo) {
+  Future<void> updateItem(Todo updatedTodo) async {
+    await _todoBox.put(updatedTodo.id, updatedTodo);
+
     _todos = _todos.map((todo) {
       if (todo.id == updatedTodo.id) {
         return updatedTodo;
@@ -151,8 +156,9 @@ class TodosControllerS extends GetxController {
     update([TodosControllerID.TODOS]);
   }
 
-  void remove(String id) {
-    _todos.removeWhere((todo) => todo.id == id);
+  Future<void> remove(Todo _todo) async {
+    await _todo.delete();
+    _todos.removeWhere((todo) => todo.id == _todo.id);
     update([TodosControllerID.TODOS]);
   }
 

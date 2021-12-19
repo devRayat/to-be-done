@@ -20,10 +20,10 @@ class TaskAdapter extends TypeAdapter<Task> {
       id: fields[0] as String,
       label: fields[1] as String,
       description: fields[2] as String,
+      createdAt: fields[3] as DateTime,
       startAt: fields[4] as TimeOfDay,
       duration: fields[5] as Duration,
       color: fields[6] as Color,
-      createdAt: fields[3] as DateTime,
     );
   }
 
